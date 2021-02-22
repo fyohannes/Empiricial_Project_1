@@ -1,0 +1,257 @@
+---
+title: "Empirical Project 1"
+author: "Feven Yohannes"
+date: "February 19, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+# Needed Packages
+
+if (!require(tidyverse)) install.packages("tidyverse"); library(tidyverse)
+if (!require(haven)) install.packages("haven"); library(haven)
+if (!require(ggplot2)) install.packages("ggplot2"); library(ggplot2)
+if (!require(statar)) install.packages("statar"); library(statar)
+library(dplyr)
+library(gt)
+library(readr)
+library(tidyr)
+library(cowplot)
+
+```
+
+
+```{r}
+
+# Downloading the Data 
+
+atlas <- read_dta("atlas.dta")
+
+
+# Subsetting the Data for State and City
+
+MA <- subset(atlas,state == 25)
+
+boston <- subset(atlas,state == 25 & county == 25)
+
+
+# Subsetting for my tracts (last 6 digits of the tract name on opportunity atlas)
+
+Harrison_Lenox <- boston %>%
+  filter(tract == 071101)
+
+South_End <- boston %>%
+  filter(tract == 070500)
+
+Columbus_Ave <- boston %>%
+  filter(tract == 070800)
+
+Prudential <- boston %>%
+  filter(tract == 010600)
+
+
+```
+
+
+```{r, Making Graph 1}
+
+# Making a bar chart for Average White Incomes
+
+# I need to rename tract values 
+
+graph1 <- boston %>%
+  filter(tract %in% c(071101,070500,070800)) %>%
+  # rename.values("071101"="Harrison_Lenox") %>%
+  ggplot(aes(x=tract, y=kfr_white_pooled_p25)) + geom_col(fill="skyblue2") +
+  labs(x="Tract", 
+       y= "Average Income Percentile",
+       title = "Average Income for White Children")
+
+
+# Making a bar chart for Average Black Incomes
+
+graph2 <- boston %>%
+  filter(tract %in% c(071101,070500,070800)) %>%
+  ggplot(aes(x=tract, y=kfr_black_pooled_p25)) + geom_col(fill="violetred") +
+  labs(x="Tract", 
+       y= "Average Income Percentile",
+       title= "Average Income for Black Children")
+
+# Merge the plots together
+
+plot_grid(graph1,graph2)
+
+```
+```{r, Boston Graph}
+
+# Making a graph of distribution of incomes in Boston
+
+boston %>%
+  ggplot(aes(x=hhinc_mean2000)) + geom_histogram(color="black", fill="white") +
+  geom_vline(aes(xintercept= mean(hhinc_mean2000)),color="blue") +
+  labs(x= "Average Income",
+       y= "Number of Tracts",
+       title= "Investigating the Average Income in Boston Households in 2000",
+       subtitle= "Average Income in Boston is 76683.59 dollars")
+  
+
+
+```
+
+
+
+
+
+```{r, Caclulating Some Statistics}
+
+# Average percentile for the counties in Boston for the bottom 25 percentile is 43.2 percent
+
+boston %>%
+# Filter out NA's 
+  drop_na(kfr_pooled_pooled_p25) %>%
+  summarise(avg=mean(kfr_pooled_pooled_p25))
+
+
+# Average percentile for the counties in Boston for the bottom 25 percentile BLACK CHILDREN is 38.14 percent 
+
+boston %>%
+# Filter out NA's 
+  drop_na(kfr_black_pooled_p25) %>%
+  summarise(avg=mean(kfr_black_pooled_p25))
+
+# Average percentile for the counties in Boston for the bottom 25 percentile WHITE CHILDREN is 49.69 percent
+
+boston %>%
+# Filter out NA's 
+  drop_na(kfr_white_pooled_p25) %>%
+  summarise(avg=mean(kfr_white_pooled_p25))
+
+
+
+```
+
+
+```{r, Calculating More Statisitcs}
+
+# Calculating More Statisitcs Part 2
+
+# National Data
+
+summary(atlas$kfr_pooled_pooled_p25)
+mean(atlas$kfr_pooled_pooled_p25, na.rm=TRUE)
+sd(atlas$kfr_pooled_pooled_p25, na.rm=TRUE)
+
+# State Level Data
+
+summary(MA$kfr_pooled_pooled_p25)
+mean(MA$kfr_pooled_pooled_p25, na.rm=TRUE)
+sd(MA$kfr_pooled_pooled_p25, na.rm=TRUE)
+
+# Boston Data
+
+summary(boston$kfr_pooled_pooled_p25)
+mean(boston$kfr_pooled_pooled_p25, na.rm=TRUE)
+sd(boston$kfr_pooled_pooled_p25, na.rm=TRUE)
+```
+
+```{r, Regressions}
+
+#Making Regressions for the entire city of Boston 
+
+model1 <- lm(kfr_pooled_pooled_p25 ~  frac_coll_plus2000 + emp2000 +jail_pooled_pooled_p25, data= boston)
+
+# Summary of data
+
+summary(model1)
+
+
+# Making Regressions for White Children in Boston 
+
+model_white <- lm(kfr_white_pooled_p25 ~  frac_coll_plus2000 + emp2000 +jail_pooled_pooled_p25, data= boston)
+
+# Summary of data
+
+summary(model_white)
+
+
+# Making Regressions for Black Children in Boston 
+
+model_black <- lm(kfr_black_pooled_p25 ~  frac_coll_plus2000 + emp2000 +jail_pooled_pooled_p25, data= boston)
+
+# Summary of data
+
+summary(model_black)
+
+```
+```{r, Making Correlation Graphs--- Prison}
+
+
+# Creating Correlation Graphs for Percentatge Jailed and Mean Income 
+
+boston %>%
+  ggplot(aes(x=jail_pooled_pooled_p25,y=kfr_pooled_pooled_p25)) +geom_point() +geom_smooth(method="lm") +
+  labs(x= "Percentage of Individuals Imprisoned for Families at the 25th Percentile",
+       y= "Adult Income Ranking for Children at the 25th Percentile",
+       title= "Investigating the Relationship between Incarceration Rates and Average Income in Boston",
+       subtitle= "Negative Relationship between Incarceration Rates and Upward Mobility")
+
+# How can we get negative jail pooled values
+
+boston %>%
+  select(jail_pooled_pooled_p25)
+
+
+# Looking at the Co-Variate of these two variables-- Avergae for Boston -- Correlation is -0.1769983
+
+cor(boston$kfr_pooled_pooled_p25, boston$jail_pooled_pooled_p25, use="pairwise.complete.obs")
+
+
+# Co- Variate for White Children Only--- Correlation is -0.1432262
+
+
+cor(boston$kfr_white_pooled_p25, boston$jail_white_pooled_p25, use="pairwise.complete.obs")
+
+
+# Co- Variate for Black Children Only--- Correlation is -0.2620763
+
+
+cor(boston$kfr_black_pooled_p25 ,boston$jail_black_pooled_p25, use="pairwise.complete.obs")
+
+
+
+
+```
+```{r, Making Correlation Graphs, College Education}
+
+boston %>%
+  ggplot(aes(x=frac_coll_plus2000,y=kfr_pooled_pooled_p25)) +geom_point() +geom_smooth(method="lm") +
+  labs(x= "Percentage of Individuals With a College Degree in 2000 for Families at the 25th Percentile",
+       y= "Adult Income Ranking for Children at the 25th Percentile",
+       title= "Investigating the Relationship between Higher Education Rates Rates and Average Income in Boston",
+       subtitle= "Positive Relationship between HigherEducation  Rates and Upward Mobility")
+
+
+# Looking at the Co-Variate of mean income and education -- Avergae for Boston -- Correlation is 0.3119923
+
+cor(boston$kfr_pooled_pooled_p25, boston$frac_coll_plus2000, use="pairwise.complete.obs")
+
+
+# Co- Variate for White Children Only--- Correlation is 0.3949435
+
+
+cor(boston$kfr_white_pooled_p25, boston$frac_coll_plus2000, use="pairwise.complete.obs")
+
+
+# Co- Variate for Black Children Only--- Correlation is  -0.1587245
+    # Why is this Negative
+
+
+cor(boston$kfr_black_pooled_p25 ,boston$frac_coll_plus2000, use="pairwise.complete.obs")
+
+
+
+
+```
+
