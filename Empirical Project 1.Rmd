@@ -42,7 +42,7 @@ boston <- subset(atlas,state == 25 & county == 25)
 Harrison_Lenox <- boston %>%
   filter(tract == 071101)
 
-South_End <- boston %>%
+Shawmut <- boston %>%
   filter(tract == 070500)
 
 Columbus_Ave <- boston %>%
@@ -61,23 +61,29 @@ Prudential <- boston %>%
 
 # I need to rename tract values 
 
+
 graph1 <- boston %>%
-  filter(tract %in% c(071101,070500,070800)) %>%
+  
+  # Made tract a character variable so I could have a better x axis on the graph 
+  
+  mutate(tract= as.character(tract)) %>%
+  filter(tract %in% c(071101,070500)) %>%
   # rename.values("071101"="Harrison_Lenox") %>%
   ggplot(aes(x=tract, y=kfr_white_pooled_p25)) + geom_col(fill="skyblue2") +
   labs(x="Tract", 
        y= "Average Income Percentile",
-       title = "Average Income for White Children")
+       title = "Upward Mobility for White Children")
 
 
 # Making a bar chart for Average Black Incomes
 
 graph2 <- boston %>%
-  filter(tract %in% c(071101,070500,070800)) %>%
+  filter(tract %in% c(071101,070500)) %>%
+  mutate(tract= as.character(tract)) %>%
   ggplot(aes(x=tract, y=kfr_black_pooled_p25)) + geom_col(fill="violetred") +
   labs(x="Tract", 
        y= "Average Income Percentile",
-       title= "Average Income for Black Children")
+       title= "Upward Mobility for Black Children")
 
 # Merge the plots together
 
@@ -94,7 +100,7 @@ boston %>%
   labs(x= "Average Income",
        y= "Number of Tracts",
        title= "Investigating the Average Income in Boston Households in 2000",
-       subtitle= "Average Income in Boston is 76683.59 dollars")
+       subtitle= "Average Income in Boston is around 77,000 dollars")
   
 
 
@@ -250,6 +256,41 @@ cor(boston$kfr_white_pooled_p25, boston$frac_coll_plus2000, use="pairwise.comple
 
 cor(boston$kfr_black_pooled_p25 ,boston$frac_coll_plus2000, use="pairwise.complete.obs")
 
+
+
+
+```
+```{r, Employment Rates}
+
+```
+
+
+```{r, Single Parents}
+
+# Investigating Single Parent Shares
+
+# Creating the Graph for Single Parents and Income Outcome
+
+boston %>%
+  ggplot(aes(x=singleparent_share2000,y=kfr_pooled_pooled_p25)) +geom_point() + geom_smooth(method="lm") +
+  labs(x= "Share of Single-Headed Households with Children in 2000",
+       y= "Adult Income Ranking for Children at the 25th Percentile",
+       title= "Investigating the Relationship between Single Parent Rates Rates Rates and Average Income in Boston",
+       subtitle= "Negative Relationship between Single Parent Rates and Upward Mobility")
+
+
+#Looking at the single parent household rates from 1990
+
+
+Shawmut %>%
+  select(singleparent_share2000) # 0.5668449 0.5435898(2000)
+
+# Harrison Ave single parent households are # 0.5629139--- 0.6530612(2000)
+
+
+# Calculating the co-variate
+
+cor(boston$kfr_pooled_pooled_p25, boston$singleparent_share2000, use="pairwise.complete.obs")
 
 
 
