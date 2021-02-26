@@ -55,6 +55,29 @@ Prudential <- boston %>%
 ```
 
 
+```{r, Tract Statistics}
+
+# Racial shares at Harrison Lenox --- 45 percent, Black Share 26 percent 
+
+Harrison_Lenox %>%
+  select(share_white2000)
+
+Harrison_Lenox %>%
+  select(share_black2000)
+
+# Racial Shares at Shawmut Ave --- 47 percent, Black Share 9 percent 
+
+Shawmut %>%
+  select(share_white2000)
+
+Shawmut %>%
+  select(share_black2000)
+
+
+  
+```
+
+
 ```{r, Making Graph 1}
 
 # Making a bar chart for Average White Incomes
@@ -85,11 +108,28 @@ graph2 <- boston %>%
        y= "Average Income Percentile",
        title= "Upward Mobility for Black Children")
 
-# Merge the plots together
+# Merge the plots together and save it to ggsave
 
-plot_grid(graph1,graph2)
+plot_grid(graph1,graph2)  +
+  theme(plot.title = element_text(face = "bold",size=30))+
+  theme(plot.subtitle = element_text(face = "bold",size=29)) +
+  theme(plot.caption =element_text(face = "bold",size=27))+
+    theme(axis.title.x = element_text(size = 30),
+          axis.title.y = element_text(size = 30)) +
+    theme(
+  legend.title = element_text(color = "black", size = 29),
+  legend.text = element_text(color = "black", size = 29)
+  ) +
+    theme(axis.text.x = element_text(color = "black", size = 26, hjust = .5, vjust = .5, face = "plain"),
+        axis.text.y = element_text(color = "black", size = 26, angle = 0, hjust = 1, vjust = 0, face = "plain")) 
+  
+  
+  ggsave("figure4.png", height = 13, width = 21)
+
 
 ```
+
+
 ```{r, Boston Graph}
 
 # Making a graph of distribution of incomes in Boston
@@ -100,7 +140,20 @@ boston %>%
   labs(x= "Average Income",
        y= "Number of Tracts",
        title= "Investigating the Average Income in Boston Households in 2000",
-       subtitle= "Average Income in Boston is around 77,000 dollars")
+       subtitle= "Average Income in Boston is around 77,000 dollars") +
+  theme(plot.title = element_text(face = "bold",size=30))+
+  theme(plot.subtitle = element_text(face = "bold",size=29)) +
+    theme(axis.title.x = element_text(size = 30),
+          axis.title.y = element_text(size = 30)) +
+    theme(
+  legend.title = element_text(color = "black", size = 29),
+  legend.text = element_text(color = "black", size = 29)
+  ) +
+    theme(axis.text.x = element_text(color = "black", size = 26, hjust = .5, vjust = .5, face = "plain"),
+        axis.text.y = element_text(color = "black", size = 26, angle = 0, hjust = 1, vjust = 0, face = "plain")) 
+  
+  
+  ggsave("figure3.png", height = 13, width = 21)
   
 
 
@@ -148,6 +201,7 @@ boston %>%
 summary(atlas$kfr_pooled_pooled_p25)
 mean(atlas$kfr_pooled_pooled_p25, na.rm=TRUE)
 sd(atlas$kfr_pooled_pooled_p25, na.rm=TRUE)
+
 
 # State Level Data
 
@@ -197,11 +251,26 @@ summary(model_black)
 # Creating Correlation Graphs for Percentatge Jailed and Mean Income 
 
 boston %>%
-  ggplot(aes(x=jail_pooled_pooled_p25,y=kfr_pooled_pooled_p25)) +geom_point() +geom_smooth(method="lm") +
+  filter(jail_pooled_pooled_p25 >0) %>%
+  ggplot(aes(x=jail_pooled_pooled_p25,y=kfr_pooled_pooled_p25)) +geom_point() + geom_smooth(method="lm") +
   labs(x= "Percentage of Individuals Imprisoned for Families at the 25th Percentile",
        y= "Adult Income Ranking for Children at the 25th Percentile",
        title= "Investigating the Relationship between Incarceration Rates and Average Income in Boston",
-       subtitle= "Negative Relationship between Incarceration Rates and Upward Mobility")
+       subtitle= "Negative Relationship between Incarceration Rates and Upward Mobility") +
+  theme(plot.title = element_text(face = "bold",size=30))+
+  theme(plot.subtitle = element_text(face = "bold",size=29)) +
+  theme(plot.caption =element_text(face = "bold",size=27))+
+    theme(axis.title.x = element_text(size = 30),
+          axis.title.y = element_text(size = 30)) +
+    theme(
+  legend.title = element_text(color = "black", size = 29),
+  legend.text = element_text(color = "black", size = 29)
+  ) +
+    theme(axis.text.x = element_text(color = "black", size = 26, hjust = .5, vjust = .5, face = "plain"),
+        axis.text.y = element_text(color = "black", size = 26, angle = 0, hjust = 1, vjust = 0, face = "plain")) 
+  
+  
+  ggsave("figure8.png", height = 13, width = 21)
 
 # How can we get negative jail pooled values
 
@@ -229,6 +298,7 @@ cor(boston$kfr_black_pooled_p25 ,boston$jail_black_pooled_p25, use="pairwise.com
 
 
 ```
+
 ```{r, Making Correlation Graphs, College Education}
 
 boston %>%
@@ -254,13 +324,87 @@ cor(boston$kfr_white_pooled_p25, boston$frac_coll_plus2000, use="pairwise.comple
     # Why is this Negative
 
 
-cor(boston$kfr_black_pooled_p25 ,boston$frac_coll_plus2000, use="pairwise.complete.obs")
+cor(boston$kfr_black_pooled_p25,boston$frac_coll_plus2000, use="pairwise.complete.obs")
 
 
 
 
 ```
+
+
+
 ```{r, Employment Rates}
+
+# Investigating employment rates
+
+# Creating the graph 
+
+boston %>%
+  ggplot(aes(x=emp2000,y=kfr_pooled_pooled_p25)) +geom_point() +geom_smooth(method="lm") +
+  labs(x= "Employment Rates in 2000 for Families at the 25th Percentile",
+       y= "Adult Income Ranking for Children at the 25th Percentile",
+       title= "Investigating the Relationship between Employment Rates and Average Income in Boston",
+       subtitle= "Positive Relationship between Employment Rates and Upward Mobility")+
+  theme(plot.title = element_text(face = "bold",size=30))+
+  theme(plot.subtitle = element_text(face = "bold",size=29)) +
+  theme(plot.caption =element_text(face = "bold",size=27))+
+    theme(axis.title.x = element_text(size = 30),
+          axis.title.y = element_text(size = 30)) +
+    theme(
+  legend.title = element_text(color = "black", size = 29),
+  legend.text = element_text(color = "black", size = 29)
+  ) +
+    theme(axis.text.x = element_text(color = "black", size = 26, hjust = .5, vjust = .5, face = "plain"),
+        axis.text.y = element_text(color = "black", size = 26, angle = 0, hjust = 1, vjust = 0, face = "plain")) 
+  
+  
+  ggsave("figure7.png", height = 13, width = 21)
+
+
+# Calculating the co-variate
+
+cor(boston$kfr_black_pooled_p25, boston$emp2000, use="pairwise.complete.obs")
+
+
+Shawmut %>%
+  select(job_density_2013)
+
+Harrison_Lenox  %>%
+  select(job_density_2013)
+
+
+# Creating a new data frame 
+
+tract <- c("Harrison Lenox", "Harrison Lenox", "Shawmut Ave","Shawmut Ave")
+employment_rates  <- c(89,73,72,71)
+race <- c("White Children","Black Children","Black Children","White Children")
+
+employment_df <- data.frame(tract,employment_rates,race)
+
+
+
+# Making a Graph of Employment rates between Tracts
+
+employment_df %>%
+  ggplot(aes(x=tract,y=employment_rates)) + geom_col(fill="plum4") +facet_wrap(~race) +
+  labs(x= "Tract",
+       y= "Employment Rates",
+       title= "Investigating the Relationship between Employment Rates and Average Income") +
+  theme(plot.title = element_text(face = "bold",size=30))+
+  theme(plot.subtitle = element_text(face = "bold",size=29)) +
+  theme(plot.caption =element_text(face = "bold",size=27))+
+    theme(axis.title.x = element_text(size = 30),
+          axis.title.y = element_text(size = 30)) +
+    theme(
+  legend.title = element_text(color = "black", size = 29),
+  legend.text = element_text(color = "black", size = 29)
+  ) +
+    theme(axis.text.x = element_text(color = "black", size = 26, hjust = .5, vjust = .5, face = "plain"),
+        axis.text.y = element_text(color = "black", size = 26, angle = 0, hjust = 1, vjust = 0, face = "plain")) 
+  
+  
+  ggsave("figure6.png", height = 13, width = 21)
+
 
 ```
 
@@ -276,7 +420,22 @@ boston %>%
   labs(x= "Share of Single-Headed Households with Children in 2000",
        y= "Adult Income Ranking for Children at the 25th Percentile",
        title= "Investigating the Relationship between Single Parent Rates Rates Rates and Average Income in Boston",
-       subtitle= "Negative Relationship between Single Parent Rates and Upward Mobility")
+       subtitle= "Negative Relationship between Single Parent Rates and Upward Mobility") +
+  theme(plot.title = element_text(face = "bold",size=30))+
+  theme(plot.subtitle = element_text(face = "bold",size=29)) +
+  theme(plot.caption =element_text(face = "bold",size=27))+
+    theme(axis.title.x = element_text(size = 30),
+          axis.title.y = element_text(size = 30)) +
+    theme(
+  legend.title = element_text(color = "black", size = 29),
+  legend.text = element_text(color = "black", size = 29)
+  ) +
+    theme(axis.text.x = element_text(color = "black", size = 26, hjust = .5, vjust = .5, face = "plain"),
+        axis.text.y = element_text(color = "black", size = 26, angle = 0, hjust = 1, vjust = 0, face = "plain")) 
+  
+  
+  ggsave("figure5.png", height = 13, width = 21)
+```
 
 
 #Looking at the single parent household rates from 1990
@@ -292,6 +451,63 @@ Shawmut %>%
 
 cor(boston$kfr_pooled_pooled_p25, boston$singleparent_share2000, use="pairwise.complete.obs")
 
+
+
+
+```{r, Graph for Incarceration Rates}
+
+black_incarceration <- boston %>%
+  filter(tract %in% c(071101,070500)) %>%
+  mutate(tract= as.character(tract)) %>%
+  ggplot(aes(x=tract,y=jail_black_pooled_p25)) +geom_col(fill="red4")  +
+  labs(x="Tract", 
+       y= "Percentage of Black Individauls Incarcerated",
+       title = "Incarceration Rates for Black Individuals in Harrison Lenox and Shawmut Ave",
+       caption = "071101= Harrison Lenox , 070500 = Shawmut Ave")
+
+boston %>%
+  filter(tract %in% c(071101,070500)) %>%
+  mutate(tract= as.character(tract)) %>%
+  ggplot(aes(x=tract,y=jail_white_pooled_p25)) +geom_col(fill="orange3")  +
+  labs(x="Tract", 
+       y= "Percentage of White Individauls Incarcerated",
+       title = "Incarceration Rates for Black Individuals in Harrison Lenox and Shawmut Ave",
+       caption = "071101= Harrison Lenox , 070500 = Shawmut Ave")
+
+
+
+# Creating a new data frame for Incarceration Rates 
+
+tract <- c("Harrison Lenox", "Harrison Lenox", "Shawmut Ave","Shawmut Ave")
+employment_rates  <- c(1,6.9,1,1)
+race <- c("White Children","Black Children","Black Children","White Children")
+
+incarceration_df <- data.frame(tract,employment_rates,race)
+
+
+
+# Making a Graph 
+
+incarceration_df %>%
+  ggplot(aes(x=tract,y=employment_rates)) + geom_col(fill="brown4") +facet_wrap(~race) +
+  labs(x= "Tract",
+       y= "Incarceration Rates",
+       title= "Investigating the Relationship between Incarceration Rates and Average Income",
+       caption = "1 percent Incarceration Rates actually show less than 1 percent Incarceration Rates") +
+  theme(plot.title = element_text(face = "bold",size=30))+
+  theme(plot.subtitle = element_text(face = "bold",size=29)) +
+  theme(plot.caption =element_text(face = "bold",size=27))+
+    theme(axis.title.x = element_text(size = 30),
+          axis.title.y = element_text(size = 30)) +
+    theme(
+  legend.title = element_text(color = "black", size = 29),
+  legend.text = element_text(color = "black", size = 29)
+  ) +
+    theme(axis.text.x = element_text(color = "black", size = 26, hjust = .5, vjust = .5, face = "plain"),
+        axis.text.y = element_text(color = "black", size = 26, angle = 0, hjust = 1, vjust = 0, face = "plain")) 
+  
+  
+  ggsave("figure9.png", height = 13, width = 21)
 
 
 ```
